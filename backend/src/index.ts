@@ -7,7 +7,11 @@ import cors from "cors";
 const app: Application = express();
 const port = 3000;
 
-app.use(cors());
+const corsOptions = {
+    origin: 'http://localhost:4200',
+    credentials: true
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 app.route('/api/login')
@@ -16,9 +20,12 @@ app.route('/api/login')
 app.get('/', (req: Request, res: Response) => {
     res.send("Bueas");
 })
+app.get('/test', (req: Request, res: Response) => {
+    console.log(req.headers.authorization);
+    res.send(JSON.stringify('OK'));
+});
 
 app.listen(port, () => {
-    // tslint:disable-next-line
     console.log('server andando');
 })
 
@@ -29,7 +36,7 @@ function validateEmailAndPassword() {
 }
 
 function findUserIdForEmail(email: string) {
-    return "5";
+    return email;
 }
 
 export function loginRoute(req: Request, res: Response) {
@@ -39,18 +46,18 @@ export function loginRoute(req: Request, res: Response) {
 
     if (validateEmailAndPassword()) {
         const userId = findUserIdForEmail(email);
+        const expireTime = 600;
 
         const jwtBearerToken = jwt.sign({}, RSA_PRIVATE_KEY, {
-            algorithm: 'RS256',
-            expiresIn: 120,
-            subject: userId
+            algorithm: 'HS256',
+            expiresIn: expireTime,
+            subject: userId,
         });
 
-        // send the JWT back to the user
-        // TODO - multiple options available
-
-        res.send(jwt);
-
+        res.send(JSON.stringify({
+            jwt: jwtBearerToken,
+            expiresIn: expireTime
+        }));
     }
     else {
         // send status 401 Unauthorized

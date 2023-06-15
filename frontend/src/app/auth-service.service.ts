@@ -1,18 +1,26 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 
 @Injectable({
-  providedIn: "root"
+    providedIn: "root"
 })
 export class AuthService {
 
-  constructor(private http: HttpClient) {
-  }
+    headers: HttpHeaders;
 
-  login(email:string, password:string ) {
-    return this.http.post<any>('localhost:3000/api/login', {email, password});
-      // this is just the HTTP call,
-      // we still need to handle the reception of the token
-      // .shareReplay();
-  }
+    constructor(private http: HttpClient) {
+        this.headers = new HttpHeaders();
+    }
+
+    setToken(token: string){
+        this.headers.set('Authorization', 'Bearer '+token);
+    }
+
+    login(email:string, password:string ) {
+        return this.http.post<string>('http://localhost:3000/api/login', {email, password});
+    }
+
+    test() {
+        return this.http.get('http://localhost:3000/test', {withCredentials: true, headers: this.headers});
+    }
 }
